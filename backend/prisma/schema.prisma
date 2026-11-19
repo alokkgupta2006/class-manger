@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum AttendanceStatus {
+  Present
+  Absent
+  Cancelled
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  subjects     Subject[]
+  notes        Note[]
+  timetable    TimetableEntry[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Subject {
+  id         String       @id @default(cuid())
+  userId     String
+  name       String
+  code       String
+  instructor String       @default("")
+  color      String       @default("#6366f1")
+  target     Int          @default(75)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendance Attendance[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([userId, code])
+  @@index([userId])
+}
+
+model Attendance {
+  id        String   @id @default(cuid())
+  subjectId String
+  date      DateTime
+  status    AttendanceStatus
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subjectId, date])
+}
+
+model Note {
+  id        String   @id @default(cuid())
+  userId    String
+  date      DateTime
+  title     String   @default("")
+  content   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model TimetableEntry {
+  id         String   @id @default(cuid())
+  userId     String
+  subject    String
+  instructor String   @default("")
+  location   String   @default("")
+  dayOfWeek  Int
+  startTime  String
+  endTime    String
+  color      String   @default("#6366f1")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId, dayOfWeek, startTime])
+}
