@@ -19,10 +19,12 @@ export const signRefreshToken = (userId) =>
 export const verifyAccessToken = (token) => jwt.verify(token, accessSecret());
 export const verifyRefreshToken = (token) => jwt.verify(token, refreshSecret());
 
+const isProd = process.env.NODE_ENV === "production";
+
 export const cookieOptions = (maxAge) => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: isProd,
+  sameSite: isProd ? "none" : "lax",
   maxAge,
   path: "/"
 });
@@ -33,6 +35,7 @@ export const setAuthCookies = (res, userId) => {
 };
 
 export const clearAuthCookies = (res) => {
-  res.clearCookie("accessToken", cookieOptions(0));
-  res.clearCookie("refreshToken", cookieOptions(0));
+  const { maxAge, ...clearOpts } = cookieOptions(0);
+  res.clearCookie("accessToken", clearOpts);
+  res.clearCookie("refreshToken", clearOpts);
 };

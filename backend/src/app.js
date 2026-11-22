@@ -12,7 +12,9 @@ import noteRoutes from "./routes/noteRoutes.js";
 import timetableRoutes from "./routes/timetableRoutes.js";
 
 const app = express();
-const origin = process.env.CLIENT_ORIGIN || "http://localhost:5173";
+app.set("trust proxy", 1);
+
+const origin = (process.env.CLIENT_ORIGIN || "http://localhost:5173").replace(/\/$/, "");
 
 app.use(helmet());
 app.use(cors({ origin, credentials: true }));
